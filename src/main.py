@@ -4,6 +4,7 @@
 import click
 import time
 import os
+import subprocess
 
 def make_command(command, val):
     return "--" + command + " " + str(val)
@@ -40,6 +41,9 @@ def prog(fps, width, height, duration):
         time.sleep(1) # short sleep to prevent overuse of CPU
 
 
+def run_cam_daemon():
+    subprocess.call(["./picam"])
 
 if __name__ == '__main__':
-    prog()
+    run_cam_daemon()
+    #prog()
