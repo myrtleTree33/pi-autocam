@@ -8,4 +8,4 @@
 (cd rec && while true; do sleep 2; find . -mtime +10 -delete; done &)
 
 ## Start taking photos
-python main.py --fps 2 --width 300 --height 300 --duration 5
+python main.py --fps 2 --width 1280 --height 720 --duration 5 --videobitrate 1000
