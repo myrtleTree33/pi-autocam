@@ -8,4 +8,4 @@
 (cd rec && while true; do sleep 2; find . -mtime +10 -delete; done &)
 
 ## Start taking photos
-./main.py
+python main.py
