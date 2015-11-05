@@ -5,6 +5,13 @@ import sys
 import time
 import os
 import subprocess
+import threading import Thread
+
+## Set maximum lifespan of file before it is deleted
+MAX_LIFESPAN_FILE_SECS = 60 * 5  ## 5 minutes
+
+## Sets time to run garbage colllector job
+GARBAGE_CHECK_TIME_SECS = 10  ## 10 seconds
 
 def make_command(command, val):
     return "--" + command + " " + str(val)
@@ -38,7 +45,10 @@ def prog(fps, width, height, duration, videobitrate):
     """
     args = " " + make_command("fps", fps) + " " + make_command("width", width) + " " + make_command("height", height) + " " + make_command("videobitrate", videobitrate)
 
+    ## Run the daemons ----------
+    run_garbage_daemon('./rec', MAX_LIFESPAN_FILE_SECS, GARBAGE_CHECK_TIME_SECS)
     run_cam_daemon(args)
+    ## --------------------------
 
     while(True):
         take_video(duration)
@@ -49,6 +59,31 @@ def run_cam_daemon(args):
     print args
     subprocess.Popen(['./picam'] + args.split(' '))
     time.sleep(1)
+
+
+def clear_old_files(folder, lifespan_secs):
+    """
+    Removes old files that are no longer used.
+    """
+    now = time.time()
+    for root, dirs, files in os.walk(folder):
+        for f in files:
+            long_file_path = os.path.join(root, f)
+            if now - os.stat(long_file_path).st_mtime > lifespan_secs:
+                print 'Removing file ' + f + '..'
+                os.remove(long_file_path)
+
+
+def garbage_daemon(folder, lifespan_secs, interval_secs):
+    while True:
+        clear_old_files(folder, lifespan_secs)
+        time.sleep(interval_secs)
+
+
+def init_garbage_daemon(folder, lifespan_secs, interval_secs):
+    thread = Thread(target = garbage_daemon, args = (folder, lifespan_secs, interval_secs))
+    thread.start()
+
 
 if __name__ == '__main__':
     print "Running timer.."
