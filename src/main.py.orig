@@ -6,13 +6,37 @@ import time
 import os
 import subprocess
 from threading import Thread
-from apscheduler.schedulers.blocking import BlockingScheduler
 
 ## Set maximum lifespan of file before it is deleted
-MAX_LIFESPAN_FILE_SECS = 60 * 5  ## 5 minutes
+MAX_LIFESPAN_FILE_SECS = 60 * 60 * 24 * 5  ## 5 days
 
 ## Sets time to run garbage colllector job
-GARBAGE_CHECK_TIME_SECS = 10  ## 10 seconds
+GARBAGE_CHECK_TIME_SECS = 2  ## 2 seconds
+
+def clear_old_files(folder, lifespan_secs):
+    """
+    Removes old files that are no longer used.
+    """
+    print 'running garbage collector..'
+    now = time.time()
+    for root, dirs, files in os.walk(folder):
+        for f in files:
+            long_file_path = os.path.join(root, f)
+            if now - os.stat(long_file_path).st_mtime > lifespan_secs:
+                print 'Removing file ' + f + '..'
+                os.remove(long_file_path)
+
+
+def garbage_daemon(folder, lifespan_secs, interval_secs):
+    while True:
+        clear_old_files(folder, lifespan_secs)
+        time.sleep(interval_secs)
+
+
+def init_garbage_daemon(folder, lifespan_secs, interval_secs):
+    thread = Thread(target = garbage_daemon, args = (folder, lifespan_secs, interval_secs))
+    thread.start()
+
 
 def make_command(command, val):
     return "--" + command + " " + str(val)
@@ -28,22 +52,10 @@ def take_video(duration):
     except Exception:
         pass
 
-    print 'Starting video capture..'
     subprocess.call(["touch", startRec])
     time.sleep(duration)
     subprocess.call(["touch", stopRec])
     time.sleep(2)
-    print 'Ending video capture..'
-
-
-def calc_time_diff(startTuple, endTuple):
-    """
-    Retrieves the number of seconds between 2 time tuples
-    """
-    start = datetime.datetime(year=2014, month=2, day=14, hour=start[0], minute=start[0])
-    end = datetime.datetime(year=2014, month=2, day=14, hour=start[1], minute=start[1])
-    return (start - end).total_seconds()
-
 
 
 @click.command()
@@ -59,29 +71,27 @@ def prog(fps, width, height, duration, videobitrate, start, end):
     """
 
     # Start and end times as a tuple
-    startTuple = (start[2:], start[:2])
-    endTuple = (end[2:], end[:2])
+    startTime = (start[2:], start[:2])
+    endTime = (end[2:], end[:2])
 
     args = " " + make_command("fps", fps) + " " + make_command("width", width) + " " + make_command("height", height) + " " + make_command("videobitrate", videobitrate)
 
     ## Run the daemons ----------
-    run_garbage_daemon('./rec', MAX_LIFESPAN_FILE_SECS, GARBAGE_CHECK_TIME_SECS)
+    init_garbage_daemon('./rec', MAX_LIFESPAN_FILE_SECS, GARBAGE_CHECK_TIME_SECS)
     run_cam_daemon(args)
     ## --------------------------
 
-    # runs scheduled capture from starttime to endtime daily
-    sched = BlockingScheduler()
-    timeDiff = calc_time_diff(startTuple, endTuple)
-    job = sched.add_job(take_video, 'cron', hour=int(startTuple[0]), minute=int(startTuple[1]), args=[timeDiff])
-    sched.start()
+    while(True):
+        take_video()
+        time.sleep(0.01) # short sleep to prevent overuse of CPU
 
 
 def run_cam_daemon(args):
     print args
-    #subprocess.Popen(['./picam'] + args.split(' '))
-    print 'mocking cam daemon running..'
+    subprocess.Popen(['./picam'] + args.split(' '))
     time.sleep(1)
 
+<<<<<<< HEAD
 def init_garbage_daemon(folder, lifespan_secs, interval_secs):
     """
     Initializes the garbage daemon
@@ -107,6 +117,8 @@ def init_garbage_daemon(folder, lifespan_secs, interval_secs):
 
     thread = Thread(target = garbage_daemon, args = (folder, lifespan_secs, interval_secs))
     thread.start()
+=======
+>>>>>>> 42f12f3cfca04d36f00389c328c3c637ac8af46c
 
 
 if __name__ == '__main__':

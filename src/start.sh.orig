@@ -16,4 +16,8 @@
 ## Please check Picam manual for more information.
 ## Features: Picam apparently uses Hardware embedded MPEG encoder for TS files
 ## So this offsets load from Raspberry Pi to the hardware itself.
+<<<<<<< Updated upstream
 python main.py --fps 2 --width 160 --height 90 --duration 1200 --videobitrate 500000
+=======
+python main.py --fps 2 --width 1280 --height 720 --start 1437 --end 1515 --videobitrate 1000
+>>>>>>> Stashed changes
