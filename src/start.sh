@@ -12,7 +12,7 @@
 
 ## Start taking photos
 ## Modify numbers as required here.
-## Do note that screen dimensions are fixed to preset number; 
+## Do note that screen dimensions must be in 16:9 ratio, else program fails.
 ## Please check Picam manual for more information.
 ## Features: Picam apparently uses Hardware embedded MPEG encoder for TS files
 ## So this offsets load from Raspberry Pi to the hardware itself.

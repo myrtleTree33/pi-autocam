@@ -62,6 +62,10 @@ def prog(fps, width, height, videobitrate, start, end):
     Simple program to take pictures
     """
 
+    if (float(16) / 9) != (float(width) / height):
+        raise ValueError('Aspect ratio not in 16:9.  Please set accordingly.')
+        sys.exit(-1)
+
     # Start and end times as a tuple
     startTuple = (int(start[:2]), int(start[2:]))
     endTuple = (int(end[:2]), int(end[2:]))
