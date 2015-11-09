@@ -52,9 +52,9 @@ def calc_time_diff(startTuple, endTuple):
 
 @click.command()
 @click.option('--fps', default=2, help='Frames per second/')
-@click.option('--width', default=1280, help='The screen capture width')
-@click.option('--height', default=720, help='The screen capture height')
-@click.option('--videobitrate', default=2000, help='The video bit rate of each file')
+@click.option('--width', default=160, help='The screen capture width')
+@click.option('--height', default=90, help='The screen capture height')
+@click.option('--videobitrate', default=500000, help='The video bit rate of each file')
 @click.option('--start', default='0700', help='Video start time')
 @click.option('--end', default='1800', help='Video end time')
 def prog(fps, width, height, videobitrate, start, end):
@@ -62,6 +62,10 @@ def prog(fps, width, height, videobitrate, start, end):
     Simple program to take pictures
     """
 
+    ## Catch various errors
+    if (fps < 2):
+        raise ValueError('FPS is too low.  Please choose a higher FPS.')
+        sys.exit(-1)
     if (float(16) / 9) != (float(width) / height):
         raise ValueError('Aspect ratio not in 16:9.  Please set accordingly.')
         sys.exit(-1)
@@ -89,8 +93,9 @@ def prog(fps, width, height, videobitrate, start, end):
 
 def run_cam_daemon(args):
     print args
+    print 'cam daemon running..'
+    ## UNCOMMENT BEFORE FLIGHT
     #subprocess.Popen(['./picam'] + args.split(' '))
-    print 'mocking cam daemon running..'
     time.sleep(1)
 
 def init_garbage_daemon(folder, lifespan_secs, interval_secs):

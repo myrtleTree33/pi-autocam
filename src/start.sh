@@ -4,11 +4,8 @@
 ## Bootloader script to take videos.
 ###############################################
 
-
-## Delete all files older than 10 days.  Scan for these files every 60 seconds.
-## CAUTION: This command is very dangerous, ensure is already in correct folder.
-## DO NOT TOUCH BELOW COMMAND
-# (cd rec && while true; do sleep 2; find . -mtime +10 -delete; done &)
+## Script to run camcorder.
+## In the event of failure, press ctrl + \ to dump program.
 
 ## Start taking photos
 ## Modify numbers as required here.
