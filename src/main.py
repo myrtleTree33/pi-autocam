@@ -5,11 +5,12 @@ import sys
 import time
 import os
 import subprocess
+import datetime
 from threading import Thread
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 ## Set maximum lifespan of file before it is deleted
-MAX_LIFESPAN_FILE_SECS = 60 * 5  ## 5 minutes
+MAX_LIFESPAN_FILE_SECS = 60 * 60 * 24 * 100  ## 100 days
 
 ## Sets time to run garbage colllector job
 GARBAGE_CHECK_TIME_SECS = 10  ## 10 seconds
@@ -40,9 +41,12 @@ def calc_time_diff(startTuple, endTuple):
     """
     Retrieves the number of seconds between 2 time tuples
     """
-    start = datetime.datetime(year=2014, month=2, day=14, hour=start[0], minute=start[0])
-    end = datetime.datetime(year=2014, month=2, day=14, hour=start[1], minute=start[1])
-    return (start - end).total_seconds()
+    print startTuple, endTuple
+    start = datetime.datetime(year=2014, month=2, day=14, hour=startTuple[0], minute=startTuple[1])
+    end = datetime.datetime(year=2014, month=2, day=14, hour=endTuple[0], minute=endTuple[1])
+    secs = (end - start).total_seconds()
+    print('Running for %d secs..' % (secs))
+    return secs
 
 
 
@@ -53,25 +57,28 @@ def calc_time_diff(startTuple, endTuple):
 @click.option('--videobitrate', default=2000, help='The video bit rate of each file')
 @click.option('--start', default='0700', help='Video start time')
 @click.option('--end', default='1800', help='Video end time')
-def prog(fps, width, height, duration, videobitrate, start, end):
+def prog(fps, width, height, videobitrate, start, end):
     """
     Simple program to take pictures
     """
 
     # Start and end times as a tuple
-    startTuple = (start[2:], start[:2])
-    endTuple = (end[2:], end[:2])
+    startTuple = (int(start[:2]), int(start[2:]))
+    endTuple = (int(end[:2]), int(end[2:]))
 
     args = " " + make_command("fps", fps) + " " + make_command("width", width) + " " + make_command("height", height) + " " + make_command("videobitrate", videobitrate)
 
     ## Run the daemons ----------
-    run_garbage_daemon('./rec', MAX_LIFESPAN_FILE_SECS, GARBAGE_CHECK_TIME_SECS)
+    init_garbage_daemon('./rec', MAX_LIFESPAN_FILE_SECS, GARBAGE_CHECK_TIME_SECS)
     run_cam_daemon(args)
     ## --------------------------
 
     # runs scheduled capture from starttime to endtime daily
     sched = BlockingScheduler()
     timeDiff = calc_time_diff(startTuple, endTuple)
+    if (timeDiff < 0):
+        raise ValueError('EndTime is earlier than StartTime.  Please correct!')
+        sys.exit(-1)
     job = sched.add_job(take_video, 'cron', hour=int(startTuple[0]), minute=int(startTuple[1]), args=[timeDiff])
     sched.start()
 
