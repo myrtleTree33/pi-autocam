@@ -10,7 +10,7 @@ from threading import Thread
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 ## Set maximum lifespan of file before it is deleted
-MAX_LIFESPAN_FILE_SECS = 60 * 60 * 24 * 100  ## 100 days
+MAX_LIFESPAN_FILE_SECS = 60 * 60 * 24 * 31  ## 31 days
 
 ## Sets time to run garbage colllector job
 GARBAGE_CHECK_TIME_SECS = 10  ## 10 seconds
@@ -95,7 +95,7 @@ def run_cam_daemon(args):
     print args
     print 'cam daemon running..'
     ## UNCOMMENT BEFORE FLIGHT
-    #subprocess.Popen(['./picam'] + args.split(' '))
+    subprocess.Popen(['./picam'] + args.split(' '))
     time.sleep(1)
 
 def init_garbage_daemon(folder, lifespan_secs, interval_secs):
